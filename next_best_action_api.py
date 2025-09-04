@@ -21,8 +21,11 @@ CSV_FILES = [
 @app.route('/api/next_action', methods=['POST'])
 def next_action():
     customer_id = request.json.get('customer_id')
+    emp_id = request.json.get('emp_id')
     if not customer_id:
         return jsonify({'error': 'customer_id required'}), 400
+    if not emp_id:
+        return jsonify({'error': 'emp_id required'}), 400
     details = ""
     json_data = {}
     for fname, label in CSV_FILES:
@@ -63,6 +66,7 @@ def next_action():
     )
     result = {
         "customer_id": customer_id,
+        "emp_id": emp_id,
         "response": response.choices[0].message.content.strip(),
         "created": datetime.now().isoformat()
     }
