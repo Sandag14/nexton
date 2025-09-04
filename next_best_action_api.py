@@ -41,6 +41,7 @@ def next_action():
         return jsonify({'error': 'emp_id required'}), 400
     details = ""
     json_data = {}
+    failed = 0
     for fname, label in CSV_FILES:
         csv_path = os.path.join("data", fname)
         try:
@@ -65,6 +66,13 @@ def next_action():
                     details += f"{i}. " + ", ".join([f"{k}: {v}" for k, v in item.items()]) + "\n"
         except Exception as e:
             print(f"Error reading {csv_path}: {e}")
+
+        if not json_data[label]:
+            failed += 1
+
+    if failed == len(CSV_FILES):
+        return jsonify({'error': 'Өгөгдөл олдсонгүй'}), 404
+
     with open("prompt0903.txt", "r", encoding="utf-8") as f:
         base_prompt = f.read()
     prompt = f"""{base_prompt}\n\nЗээлдэгчийн түүхэн мэдээлэл:\n{details}\n"""
