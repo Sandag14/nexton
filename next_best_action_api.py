@@ -80,5 +80,24 @@ def next_action():
 
     return jsonify(result)
 
+@app.route('/api/filter_response', methods=['POST'])
+def filter_response():
+    emp_id = request.json.get('emp_id')
+    if not emp_id:
+        return jsonify({'error': 'emp_id required'}), 400
+    results = []
+    response_dir = 'response'
+    for fname in os.listdir(response_dir):
+        if fname.endswith('.json'):
+            fpath = os.path.join(response_dir, fname)
+            try:
+                with open(fpath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if str(data.get('emp_id')) == str(emp_id):
+                    results.append(data)
+            except Exception as e:
+                print(f'Error reading {fpath}: {e}')
+    return jsonify({'results': results, 'count': len(results)})
+
 if __name__ == "__main__":
     app.run(port=5000)

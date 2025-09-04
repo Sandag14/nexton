@@ -7,6 +7,8 @@ __pycache__/
 .env
 venv/
 
+.venv/
+
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
