@@ -122,4 +122,4 @@ def filter_response():
     return jsonify({'results': results, 'count': len(results)})
 
 if __name__ == "__main__":
-    app.run(port=5000, ssl_context=('cert.pem', 'key.pem'))
+    app.run(port=5000)
