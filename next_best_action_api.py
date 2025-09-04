@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import openai
 import json
 import os
@@ -8,7 +8,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"], methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"])
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
@@ -21,6 +21,7 @@ CSV_FILES = [
 ]
 
 @app.route('/api/next_action', methods=['POST'])
+@cross_origin()
 def next_action():
     customer_id = request.json.get('customer_id')
     emp_id = request.json.get('emp_id')
@@ -81,6 +82,7 @@ def next_action():
     return jsonify(result)
 
 @app.route('/api/filter_response', methods=['POST'])
+@cross_origin()
 def filter_response():
     emp_id = request.json.get('emp_id')
     if not emp_id:
