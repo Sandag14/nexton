@@ -8,7 +8,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
