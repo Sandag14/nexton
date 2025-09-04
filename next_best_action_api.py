@@ -5,10 +5,12 @@ import json
 import os
 import pandas as pd
 from datetime import datetime
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 CORS(app)
-openai.api_key = ""
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
 CSV_FILES = [
     ("37. debt collection.csv", "Зээл авах үеийн нөхцөл байдал (Өрийн мэдээлэл)"),
