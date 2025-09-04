@@ -97,6 +97,8 @@ def filter_response():
                     results.append(data)
             except Exception as e:
                 print(f'Error reading {fpath}: {e}')
+    # Sort by 'created' field descending if present
+    results.sort(key=lambda x: x.get('created', ''), reverse=True)
     return jsonify({'results': results, 'count': len(results)})
 
 if __name__ == "__main__":
