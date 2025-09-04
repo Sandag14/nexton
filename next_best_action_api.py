@@ -1,0 +1,78 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import openai
+import json
+import os
+import pandas as pd
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
+openai.api_key = ""
+
+CSV_FILES = [
+    ("37. debt collection.csv", "Зээл авах үеийн нөхцөл байдал (Өрийн мэдээлэл)"),
+    ("98. debt collection.csv", "Одоогийн нөхцөл байдал (Өрийн мэдээлэл)"),
+    ("37.loan history.csv", "Зээл авах үеийн нөхцөл байдал (Зээлийн эргэн төлсөн түүх)"),
+    ("98. loan history.csv", "Одоогийн нөхцөл байдал (Зээлийн эргэн төлсөн түүх)"),
+    ("98. Income.csv", "Одоогийн нөхцөл байдал (Орлого)")
+]
+
+@app.route('/api/next_action', methods=['POST'])
+def next_action():
+    customer_id = request.json.get('customer_id')
+    if not customer_id:
+        return jsonify({'error': 'customer_id required'}), 400
+    details = ""
+    json_data = {}
+    for fname, label in CSV_FILES:
+        csv_path = os.path.join("data", fname)
+        try:
+            df = pd.read_csv(csv_path)
+            if "customer_id" in df.columns:
+                df = df[df["customer_id"].astype(str) == str(customer_id)]
+            # Хэрэгтэй багануудыг сонгох
+            if "loan history" in fname:
+                main_columns = ["customer_id", "loan_status", "disbursement_date", "loanamount", "repayments_quantity", "type", "status", "amount", "comment"]
+                df = df[[col for col in main_columns if col in df.columns]]
+            elif "debt collection" in fname:
+                main_columns = ["customer_id", "created_at", "collector_type", "collector", "type", "status", "commitment_amount", "comment", "next_action"]
+                df = df[[col for col in main_columns if col in df.columns]]
+            elif "Income" in fname:
+                main_columns = ["customer_id", "average_income", "year", "month", "amount"]
+                df = df[[col for col in main_columns if col in df.columns]]
+            records = df.to_dict(orient="records")
+            json_data[label] = records
+            if records:
+                details += f"\n[{label} - {fname}]\n"
+                for i, item in enumerate(records[-10:], 1):
+                    details += f"{i}. " + ", ".join([f"{k}: {v}" for k, v in item.items()]) + "\n"
+        except Exception as e:
+            print(f"Error reading {csv_path}: {e}")
+    with open("prompt0903.txt", "r", encoding="utf-8") as f:
+        base_prompt = f.read()
+    prompt = f"""{base_prompt}\n\nЗээлдэгчийн түүхэн мэдээлэл:\n{details}\n"""
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant for debt collection."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=800,
+        temperature=0.7
+    )
+    result = {
+        "customer_id": customer_id,
+        "response": response.choices[0].message.content.strip(),
+        "created": datetime.now().isoformat()
+    }
+
+    os.makedirs("response", exist_ok=True)
+    filename = os.path.join("response", f"response_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    return jsonify(result)
+
+if __name__ == "__main__":
+    app.run(port=5000)

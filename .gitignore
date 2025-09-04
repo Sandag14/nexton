@@ -1,0 +1,29 @@
+# Ignore Python cache and environment files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env
+venv/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore data and response files
+customer_data/
+data/
+response/
+
+# Ignore log files
+*.log
+
+# Ignore CSV files in data folder
+*.csv
