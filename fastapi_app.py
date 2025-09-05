@@ -113,3 +113,7 @@ async def filter_response(request: FilterResponseRequest):
                 print(f'Error reading {fpath}: {e}')
     results.sort(key=lambda x: x.get('created', ''), reverse=True)
     return {"results": results, "count": len(results)}
+
+@app.get("/api/test")
+async def test_api():
+    return {"message": "API амжилттай ажиллаж байна!"}
